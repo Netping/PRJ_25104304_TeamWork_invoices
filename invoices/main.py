@@ -17,7 +17,7 @@ from pathlib import Path
 def print_usage():
     script_name = os.path.basename(__file__)
     print('Error: wrong startup arguments')
-    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>')
+    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>')
     print('Help:', script_name, ' --help')
 
 # prints help for running with --help flag
@@ -28,12 +28,13 @@ def print_help():
     sample_domain = 'https://test123.teamwork.com'
     sample_apikey = 'testkey123'
     sample_project_ids = '41230,112332'
+    exclude_project_ids = '112332'
     sample_start_date = '20200501'
     sample_end_date = '20200603'
     sample_log_dir = '/var/log/scriptlogs/'
 
     help = f'''
-        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>
+        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>
 
         Form Teamwork salaries invoices on the basis of time entries and fixed expenses for specifed projects.
 
@@ -46,13 +47,14 @@ def print_help():
                 domain = {sample_domain}
                 apikey = {sample_apikey}
                 project_ids = {sample_project_ids}
+                exclude_project_ids = {exclude_project_ids}
                 start_date = {sample_start_date}
                 end_date = {sample_end_date}
                 logdir = {sample_log_dir}
 
             Then you have to execute the script this way:
 
-            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir}
+            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --exclude_project_ids {exclude_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir}
 
         Arguments:
 
@@ -67,6 +69,10 @@ def print_help():
             --project_ids project_ids
                 Ids of project on whom script execution should be based. Must be coma separated without blank spaces. For example, if you have to proceed projects with ids 100555, 200777, 300999 then you have to pass them like:
                 --project_ids 100555,200777,300999
+
+            --exclude_project_ids exclude_project_ids
+                Ids of project which script should skip. Must be coma separated without blank spaces. For example, if you have to exculde projects with ids 100555, 200777, 300999 then you have to pass them like:
+                --exclude_project_ids 100555,200777,300999
 
             --start_date start_date
                 Start date of the period on which script execution should be based. Must be in YYYYMMDD format. For example, if your start date is 1 May 2020 then you have to pass it like:
@@ -128,7 +134,7 @@ if __name__ == '__main__':
 
         try:
 
-            opts, args = getopt.getopt(argv, "", ["help", "domain=", "apikey=", "project_ids=", "apikey=", "start_date=", "end_date=", "logdir="])
+            opts, args = getopt.getopt(argv, "", ["help", "domain=", "apikey=", "project_ids=", "exclude_project_ids=", "apikey=", "start_date=", "end_date=", "logdir="])
 
         except getopt.GetoptError:
             print_usage()
@@ -148,6 +154,7 @@ if __name__ == '__main__':
         APIKEY = ''
         PROJECT_IDS = []
         PROJECT_IDS_NOT_SPLITED = ''  # for logging
+        EXCLUDE_PROJECT_IDS = []
         START_DATE = ''
         END_DATE = ''
         LOGDIR = ''
@@ -160,6 +167,8 @@ if __name__ == '__main__':
             elif opt == '--project_ids':
                 PROJECT_IDS = arg.split(',')
                 PROJECT_IDS_NOT_SPLITED = arg
+            elif opt == '--exclude_project_ids':
+                EXCLUDE_PROJECT_IDS = arg.split(',')
             elif opt == '--start_date':
                 START_DATE = arg
             elif opt == '--end_date':
@@ -199,7 +208,7 @@ if __name__ == '__main__':
 
         # log bootstrap values
 
-        log.info("== Script started (version {0}) with params: domain {1}, apikey ###, project_ids {2}, start_date {3}, end_date {4}, logdir {5}".format(SCRIPT_VERSION, DOMAIN, PROJECT_IDS_NOT_SPLITED, START_DATE, END_DATE, LOGDIR))
+        log.info("== Script started (version {0}) with params: domain {1}, apikey ###, project_ids {2}, exclude_project_ids {6}, start_date {3}, end_date {4}, logdir {5}".format(SCRIPT_VERSION, DOMAIN, PROJECT_IDS_NOT_SPLITED, START_DATE, END_DATE, LOGDIR, EXCLUDE_PROJECT_IDS))
 
         # check for last_month argument
         
@@ -275,6 +284,8 @@ if __name__ == '__main__':
                 NEW_PROJECT_IDS.append(proj['id'])
                 
             PROJECT_IDS = NEW_PROJECT_IDS
+        
+        PROJECT_IDS = [prj for prj in PROJECT_IDS if PROJECT_IDS not in EXCLUDE_PROJECT_IDS]
 
         # iterate over projects
 
