@@ -4,6 +4,7 @@ import datetime
 import logging
 import traceback
 import requests
+import requests.exceptions
 import sys
 import getopt
 import os
@@ -428,6 +429,7 @@ if __name__ == '__main__':
 
                     response.raise_for_status()
                 except requests.exceptions.HTTPError as e:
+                    # Some projects may haven't billing option, skip them
                     log_error('Ошибка ответа от API (create invoice for fixed expenses for user name {} in project {})!'.format(invoice_name, PROJECT))
                 else:
                     invoice_expenses = response.json()
