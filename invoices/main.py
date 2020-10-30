@@ -19,7 +19,7 @@ from pdf import generate_html, generate_pdf
 def print_usage():
     script_name = os.path.basename(__file__)
     print('Error: wrong startup arguments')
-    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --check-lost')
+    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --pdfdir <directory_for_pdfs> --check-lost')
     print('Help:', script_name, ' --help')
 
 # prints help for running with --help flag
@@ -37,7 +37,7 @@ def print_help():
     sample_pdf_dir = 'pdf/'
 
     help = f'''
-        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --check-lost
+        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --pdfdir <directory_for_pdfs> --check-lost
 
         Form Teamwork salaries invoices on the basis of time entries and fixed expenses for specifed projects.
 
@@ -847,9 +847,6 @@ if __name__ == '__main__':
                     auth=(APIKEY, ''))
                     
                 response.raise_for_status()
-
-                for person in items[person].strip(','):
-                    for 
 
                 processed_time_response_ids = [tid for _, ids in items.items() for tid in ids.strip(',')]
                 lost_time_response = [entrie for entrie in response.json()['time-entries'] if
