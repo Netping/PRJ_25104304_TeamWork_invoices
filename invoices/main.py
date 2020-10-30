@@ -1,17 +1,18 @@
 #!/usr/bin/env python3.8
 
 import datetime
-import logging
-import traceback
-import requests
-import requests.exceptions
-import sys
 import getopt
+import logging
 import os
+import sys
 import time as ttime
 import traceback
-from itertools import groupby
 from pathlib import Path
+
+import requests
+import requests.exceptions
+
+from pdf import generate_html, generate_pdf
 
 # prints error and usage instructions in situations when wrong arguments passed in console etc during script execution
 
