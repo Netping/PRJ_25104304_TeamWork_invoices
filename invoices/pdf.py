@@ -32,8 +32,9 @@ def generate_pdf(html, directory, filename):
 
 
 def generate_html(values):
+    path = os.path.join(os.path.dirname(__file__), 'templates')
     template = jinja2.Environment(
-        loader=jinja2.FileSystemLoader('./templates')).get_template(
+        loader=jinja2.FileSystemLoader(path)).get_template(
         'invoice.html')
     return template.render(values)
 

@@ -692,8 +692,8 @@ if __name__ == '__main__':
                                 'name': name,
                                 'task': tm['todo-item-name'],
                                 'comment': tm['description'],
-                                'time': tm['hoursDecimal'],
-                                'cost': tm['hoursDecimal'] * rates_for_users_per_project[tm['person-id']][PROJECT],
+                                'time': float(tm['hoursDecimal']),
+                                'cost': float(tm['hoursDecimal']) * float(rates_for_users_per_project[tm['person-id']][tm['project-id']]),
                             } for tm in time['time-entries'] if tm['id'] in time_ids]
                             summ = round(sum(map(lambda x: x['cost'], invoices)), 2)
                             generate_pdf(
