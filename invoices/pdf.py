@@ -1,8 +1,10 @@
+import os
+
 import jinja2
 import pdfkit
 
 
-def generate_pdf(html, path):
+def generate_pdf(html, directory, filename):
     pdfkit_settings = {
         'dpi': '96',
         'image-dpi': '3500',
@@ -17,7 +19,9 @@ def generate_pdf(html, path):
         'disable-smart-shrinking': '',
         'footer-left': '[page] of [topage]'
     }
-    with open(path, 'wb') as pdf_file:
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(os.path.join(directory, filename), 'wb') as pdf_file:
         pdf_file.write(pdfkit.PDFKit(html, "string", options=pdfkit_settings).to_pdf())
 
 
@@ -54,4 +58,4 @@ if __name__ == '__main__':
     html = generate_html(values)
     with open('output.html', 'w') as html_file:
         html_file.write(html)
-    generate_pdf(generate_html(values), 'output.pdf')
+    generate_pdf(generate_html(values), 'pdf', 'output.pdf')

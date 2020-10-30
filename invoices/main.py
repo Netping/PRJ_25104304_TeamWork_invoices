@@ -10,6 +10,7 @@ import getopt
 import os
 import time as ttime
 import traceback
+from itertools import groupby
 from pathlib import Path
 
 # prints error and usage instructions in situations when wrong arguments passed in console etc during script execution
@@ -32,6 +33,7 @@ def print_help():
     sample_start_date = '20200501'
     sample_end_date = '20200603'
     sample_log_dir = '/var/log/scriptlogs/'
+    sample_pdf_dir = 'pdf/'
 
     help = f'''
         {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>
@@ -51,10 +53,11 @@ def print_help():
                 start_date = {sample_start_date}
                 end_date = {sample_end_date}
                 logdir = {sample_log_dir}
+                pdfdir = {sample_pdf_dir}
 
             Then you have to execute the script this way:
 
-            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --exclude_project_ids {exclude_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir}
+            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --exclude_project_ids {exclude_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir} --pdfdir {sample_pdf_dir}
 
         Arguments:
 
@@ -87,6 +90,11 @@ def print_help():
                 --logdir /var/log/scriptlogs/
                 --logdir ./logs
                 --logdir .
+
+            --pdfdir pdfdir
+                Directory for pdf files. For example:
+                --pdfdir ./pdf
+                --pdfdir .
 
             --help
                 print this message
@@ -134,7 +142,7 @@ if __name__ == '__main__':
 
         try:
 
-            opts, args = getopt.getopt(argv, "", ["help", "domain=", "apikey=", "project_ids=", "exclude_project_ids=", "apikey=", "start_date=", "end_date=", "logdir="])
+            opts, args = getopt.getopt(argv, "", ["help", "domain=", "apikey=", "project_ids=", "exclude_project_ids=", "apikey=", "start_date=", "end_date=", "logdir=", "pdfdir="])
 
         except getopt.GetoptError:
             print_usage()
@@ -158,6 +166,7 @@ if __name__ == '__main__':
         START_DATE = ''
         END_DATE = ''
         LOGDIR = ''
+        PDF_DIR = ''
 
         for opt, arg in opts:
             if opt == '--domain':
@@ -175,6 +184,8 @@ if __name__ == '__main__':
                 END_DATE = arg
             elif opt == '--logdir':
                 LOGDIR = arg
+            elif opt == '--pdfdir':
+                PDF_DIR = arg
                 
                 # check is LOGDIR exists
                 
@@ -412,6 +423,7 @@ if __name__ == '__main__':
                         
             # create invoice through API for uninvoiced fixed expenses (with valid date) for current project
 
+            project_billing = True
             for key, val in fixed_expenses_by_user_id.items():
 
                 user_id = key
@@ -442,6 +454,8 @@ if __name__ == '__main__':
                 except requests.exceptions.HTTPError as e:
                     # Some projects may haven't billing option, skip them
                     log_error('Ошибка ответа от API (create invoice for fixed expenses for user name {} in project {})!'.format(invoice_name, PROJECT))
+                    project_billing = False
+                    break
                 else:
                     invoice_expenses = response.json()
                     
@@ -472,6 +486,9 @@ if __name__ == '__main__':
                     if response_json['STATUS'] != 'OK':
                         log_error('Ошибка ответа от API (create lineitems for invoice fixed expenses, project {}, user name {}, invoice {}, expenses {})! Аварийное завершение.'.format(PROJECT, invoice_name, invoice_expenses['id'], user_expenses))
                         sys.exit(1)
+
+            if not project_billing:
+                continue
 
             # get rates for people in all projects for report.txt needs
 
@@ -659,6 +676,33 @@ if __name__ == '__main__':
                     if response_json['STATUS'] != 'OK':
                         log_error('Ошибка ответа от API (create lineitems for invoice time entries, project {}, invoice {}, timelogs {})! Аварийное завершение.'.format(PROJECT, invoice['id'], items[person].strip(',')))
                         sys.exit(1)
+
+                    if PDF_DIR:
+                        try:
+                            time_ids = items[person].strip(',')
+                            invoices =[{
+                                'date': datetime.datetime.strptime(tm['date'], r'%Y-%m-%dT%H:%M:%SZ'),
+                                'name': name,
+                                'task': tm['todo-item-name'],
+                                'comment': tm['description'],
+                                'time': tm['hoursDecimal'],
+                                'cost': tm['hoursDecimal'] * rates_for_users_per_project[tm['person-id']][PROJECT],
+                            } for tm in time['time-entries'] if tm['id'] in time_ids]
+                            summ = round(sum(map(lambda x: x['cost'], invoices)), 2)
+                            generate_pdf(
+                                generate_html({
+                                    'name': name,
+                                    'date': datetime.datetime.utcnow(),
+                                    'invoices': invoices,
+                                    }),
+                                PDF_DIR,
+                                '({summ} usd) Invoice {project} {name}.pdf'.format(
+                                    summ=str(summ).replace('.', ','),
+                                    project=PROJECT,
+                                    name=name,
+                                    ))
+                        except Exception as exp:
+                            log_error('Ошибка сохранения PDF (project {}, person {}): {}'.format(PROJECT, name, exp))
                         
                 else:
                     log_error('Ошибка ответа от API (create invoice for time entries, project {}, person )! Аварийное завершение.'.format(PROJECT, name))
