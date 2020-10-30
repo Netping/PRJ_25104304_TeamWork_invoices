@@ -159,7 +159,7 @@ if __name__ == '__main__':
             print_help()
             sys.exit(2)
 
-        if (len(opts) != len(required_arguments)):
+        if (len(opts) < len(required_arguments)):
             print_usage()
             sys.exit(2)
 
@@ -188,17 +188,16 @@ if __name__ == '__main__':
                 START_DATE = arg
             elif opt == '--end_date':
                 END_DATE = arg
-            elif opt == '--logdir':
-                LOGDIR = arg
             elif opt == '--pdfdir':
                 PDF_DIR = arg
             elif opt == '--check-lost':
                 CHECK_LOST = True
+            elif opt == '--logdir':
+                LOGDIR = arg
                 
                 # check is LOGDIR exists
                 
-                p = Path(LOGDIR)             
-                
+                p = Path(LOGDIR)
                 if not p.is_dir():
                     print_usage()
                     sys.exit(2)
