@@ -18,7 +18,7 @@ from pathlib import Path
 def print_usage():
     script_name = os.path.basename(__file__)
     print('Error: wrong startup arguments')
-    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>')
+    print('Usage:', script_name, ' --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --check-lost')
     print('Help:', script_name, ' --help')
 
 # prints help for running with --help flag
@@ -36,7 +36,7 @@ def print_help():
     sample_pdf_dir = 'pdf/'
 
     help = f'''
-        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs>
+        {script_name} --domain <domain> --apikey <apikey> --project_ids <project_ids_coma_separated> --exclude_project_ids <project_ids_coma_separated> --start_date <start_date_in_YYYYMMDD_format> --end_date <end_date_in_YYYYMMDD_format> --logdir <directory_for_logs> --check-lost
 
         Form Teamwork salaries invoices on the basis of time entries and fixed expenses for specifed projects.
 
@@ -54,10 +54,11 @@ def print_help():
                 end_date = {sample_end_date}
                 logdir = {sample_log_dir}
                 pdfdir = {sample_pdf_dir}
+                check lost
 
             Then you have to execute the script this way:
 
-            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --exclude_project_ids {exclude_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir} --pdfdir {sample_pdf_dir}
+            {script_name} --domain {sample_domain} --apikey {sample_apikey} --project_ids {sample_project_ids} --exclude_project_ids {exclude_project_ids} --start_date {sample_start_date} --end_date {sample_end_date} --logdir {sample_log_dir} --pdfdir {sample_pdf_dir} --check-lost
 
         Arguments:
 
@@ -95,6 +96,9 @@ def print_help():
                 Directory for pdf files. For example:
                 --pdfdir ./pdf
                 --pdfdir .
+
+            --check-lost
+                Check lost expenses and time entries for each person after invoice.
 
             --help
                 print this message
@@ -142,7 +146,7 @@ if __name__ == '__main__':
 
         try:
 
-            opts, args = getopt.getopt(argv, "", ["help", "domain=", "apikey=", "project_ids=", "exclude_project_ids=", "apikey=", "start_date=", "end_date=", "logdir=", "pdfdir="])
+            opts, args = getopt.getopt(argv, "", ["help", "check-lost", "domain=", "apikey=", "project_ids=", "exclude_project_ids=", "apikey=", "start_date=", "end_date=", "logdir=", "pdfdir="])
 
         except getopt.GetoptError:
             print_usage()
@@ -167,6 +171,7 @@ if __name__ == '__main__':
         END_DATE = ''
         LOGDIR = ''
         PDF_DIR = ''
+        CHECK_LOST = False
 
         for opt, arg in opts:
             if opt == '--domain':
@@ -186,6 +191,8 @@ if __name__ == '__main__':
                 LOGDIR = arg
             elif opt == '--pdfdir':
                 PDF_DIR = arg
+            elif opt == '--check-lost':
+                CHECK_LOST = True
                 
                 # check is LOGDIR exists
                 
@@ -809,6 +816,56 @@ if __name__ == '__main__':
             
             for row in x:
                 print(row_format.format(*row), file=text_file)
+
+        if CHECK_LOST:
+            lost_expenses = list()
+            lost_time_response = list()
+            for PROJECT in PROJECT_IDS:
+                response = requests.get(
+                    DOMAIN + '/projects/' + PROJECT + '/expenses.json',
+                    params={},
+                    headers=HEADERS,
+                    auth=(APIKEY, '')
+                )
+                
+                response.raise_for_status()
+                
+                processed_expense_ids = [tid for _, ids in fixed_expenses_by_user_id.items() for tid in ids.strip(',')]
+                
+                lost_time_response = [entrie for entrie in response.json()['expenses'] if
+                                      str(entrie['id']) not in processed_expense_ids]
+
+                response = requests.get(
+                    DOMAIN + '/projects/' + PROJECT + '/time_entries.json',
+                    params={'billableType': 'billable',
+                     'invoicedType': 'noninvoiced',
+                     'fromdate': START_DATE_FORMAT,
+                     'todate': END_DATE_FORMAT,
+                     'pageSize': pageSize},
+                    headers=HEADERS,
+                    auth=(APIKEY, ''))
+                    
+                response.raise_for_status()
+
+                for person in items[person].strip(','):
+                    for 
+
+                processed_time_response_ids = [tid for _, ids in items.items() for tid in ids.strip(',')]
+                lost_time_response = [entrie for entrie in response.json()['time-entries'] if
+                                      str(entrie['id']) not in processed_time_response_ids]
+
+            for person_id, person_name in people_names_by_id.items():
+                person_expenses = [exp for exp in lost_time_response if
+                                   str(people_ids_by_name[exp['name']]) == str(person_id)]
+                person_time_responses = [exp for exp in lost_time_response if
+                                         str(exp['person-id']) == str(person_id)]
+                if person_expenses or person_time_responses:
+                    for exp in person_expenses:
+                        log_error("Не оплачено: person_id {} name {} expense_id {} date {} cost {}".format(
+                            person_id, person_name, exp['id'], exp['date'], exp['cost']))
+                    for tm in person_time_responses:
+                        log_error("Не оплачено: time_entries {} name {} time_entrie_id {} date {} time {}".format(
+                            person_id, person_name, tm['id'], tm['date'], tm['hoursDecimal']))
 
         # end script
 
