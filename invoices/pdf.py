@@ -22,7 +22,13 @@ def generate_pdf(html, directory, filename):
     if directory and not os.path.exists(directory):
         os.makedirs(directory)
     with open(os.path.join(directory, filename), 'wb') as pdf_file:
-        pdf_file.write(pdfkit.PDFKit(html, "string", options=pdfkit_settings).to_pdf())
+        configuration = pdfkit.configuration(
+            wkhtmltopdf=os.path.join(
+                os.path.dirname(__file__),
+                'wkhtmltopdf.sh'))
+        pdf_file.write(pdfkit.PDFKit(html, "string",
+                                     options=pdfkit_settings,
+                                     configuration=configuration).to_pdf())
 
 
 def generate_html(values):
