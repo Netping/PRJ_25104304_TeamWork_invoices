@@ -2,6 +2,8 @@
 установить Python 3.8+
 установить зависимости через pip
 заполнить файл конфигурации
+установить wkhtmltopdf https://wkhtmltopdf.org (проверено на версии 0.12.6)
+в файле wkhtmltopdf.sh проверить путь к исполняемому файлу wkhtmltopdf, по умолчанию /usr/bin/wkhtmltopdf
 
 Запуск:
 как обычный python скрипт
