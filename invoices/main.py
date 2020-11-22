@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
         # version constant for logging
 
-        SCRIPT_VERSION = "3.3"
+        SCRIPT_VERSION = "3.4"
 
         # constant for http header requests
 
