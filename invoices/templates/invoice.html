@@ -122,7 +122,7 @@
       <h1>Invoice</h1>
       <ul>
         <li>Ref name/No.: {{ name }}</li>
-        <li>Invoice Date: {{ date.strftime("%0d/%0m/%Y") }}</li>
+        <li>Invoice Date: {{ date.strftime(dateformat) }}</li>
       </ul>
     </div>
   </header>
@@ -140,7 +140,7 @@
 		<tbody>
       {% for invoice in invoices %}
         <tr>
-          <td>{{ invoice.date.strftime("%0d/%0m/%Y") }}</td>
+          <td>{{ invoice.date.strftime(dateformat) }}</td>
           <td>{{ invoice.name }}</td>
           <td>
             {{ invoice.task }}<br />
