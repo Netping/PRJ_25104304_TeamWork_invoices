@@ -72,8 +72,9 @@ def print_help():
                 --apikey 123key555example
 
             --project_ids project_ids
-                Ids of project on whom script execution should be based. Must be coma separated without blank spaces. For example, if you have to proceed projects with ids 100555, 200777, 300999 then you have to pass them like:
+                Ids of project on whom script execution should be based or 'all_projects' for process all projects on server. Must be coma separated without blank spaces. For example, if you have to proceed projects with ids 100555, 200777, 300999 then you have to pass them like:
                 --project_ids 100555,200777,300999
+                --project_ids all_projects
 
             --exclude_project_ids exclude_project_ids
                 Ids of project which script should skip. Must be coma separated without blank spaces. For example, if you have to exculde projects with ids 100555, 200777, 300999 then you have to pass them like:
@@ -135,7 +136,7 @@ if __name__ == '__main__':
 
         # version constant for logging
 
-        SCRIPT_VERSION = "3.3"
+        SCRIPT_VERSION = "4.0"
 
         # constant for http header requests
 

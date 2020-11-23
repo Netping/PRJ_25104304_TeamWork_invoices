@@ -1,4 +1,5 @@
 import os
+import platform
 
 import jinja2
 import pdfkit
@@ -19,16 +20,27 @@ def generate_pdf(html, directory, filename):
         'disable-smart-shrinking': '',
         'footer-left': '[page] of [topage]'
     }
-    if directory and not os.path.exists(directory):
-        os.makedirs(directory)
-    with open(os.path.join(directory, filename), 'wb') as pdf_file:
+    if platform.system() == 'Windows':
+        configuration = pdfkit.configuration(
+            wkhtmltopdf=os.path.join(
+                os.path.dirname(__file__),
+                'wkhtmltox', 'bin', 'wkhtmltopdf.exe'))
+    elif platform.system() == 'Linux':
         configuration = pdfkit.configuration(
             wkhtmltopdf=os.path.join(
                 os.path.dirname(__file__),
                 'wkhtmltopdf.sh'))
+    else:
+        configuration = pdfkit.configuration()
+
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(os.path.join(directory, filename), 'wb') as pdf_file:
         pdf_file.write(pdfkit.PDFKit(html, "string",
                                      options=pdfkit_settings,
                                      configuration=configuration).to_pdf())
+
 
 
 def generate_html(values):
@@ -36,33 +48,27 @@ def generate_html(values):
     template = jinja2.Environment(
         loader=jinja2.FileSystemLoader(path)).get_template(
         'invoice.html')
+    values['dateformat'] = "%d/%m/%Y" if platform.system() == 'Windows' else "%02d/%02m/%Y"
     return template.render(values)
 
 
 if __name__ == '__main__':
     import datetime
     values = {
-        'name': 'Alexey Nikolin',
+        'name': 'Name Surname',
         'date': datetime.date(2020, 10, 1),
         'invoices': [
             {
                 'date': datetime.date(2020, 9, 2),
-                'name': 'Alexey Nikolin',
-                'task': ('#DKST 708 SOFTWARE development (softeware version '
-                     '1.X is ready) - #DKST 708 SOFTWARE Сконфигурировать '
-                     'сборку образа прошивки для DKST 708 на виртуальной '
-                     'машине тестового стенда '),
-                'comment': ('1. Настроил ssh на вм. <br/>'
-                            '2. склонировал репозиторий <br/>'
-                            '3. Запустил сборку и получил ошибки<br/>'
-                            ' 4. чуть поразбирался, оставил.'),
-                'time': 0.717,
-                'cost': 7.17,
+                'name': 'Name Surname',
+                'task': ('Тест'),
+                'comment': ('1. пункт 1.<br/>'
+                            '2. пункт 2.<br/>'
+                            '3. пункт 3<br/>'
+                            '4. пункт 4.'),
+                'time': 0.852,
+                'cost': 8.52,
             },
         ] * 12
     }
-
-    html = generate_html(values)
-    with open('output.html', 'w') as html_file:
-        html_file.write(html)
-    generate_pdf(generate_html(values), 'pdf', 'output.pdf')
+    generate_pdf(generate_html(values), 'pdf_out', 'output.pdf')
