@@ -11,7 +11,6 @@ from pathlib import Path
 
 import requests
 import requests.exceptions
-
 from pdf import generate_html, generate_pdf
 
 # prints error and usage instructions in situations when wrong arguments passed in console etc during script execution
@@ -197,6 +196,8 @@ if __name__ == '__main__':
                 LOGDIR = arg
                 
                 # check is LOGDIR exists
+                if LOGDIR and not os.path.exists(LOGDIR):
+                    os.makedirs(LOGDIR)
                 
                 p = Path(LOGDIR)
                 if not p.is_dir():
@@ -278,7 +279,7 @@ if __name__ == '__main__':
         # get projects if needed
         
         if ( len(PROJECT_IDS) == 1 ) and ( PROJECT_IDS[0] == 'all_projects' ):
-			
+            
             log.info('Получаем список проектов, так как указан ключ all_projects')
         
             response = requests.get(
