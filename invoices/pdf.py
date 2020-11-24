@@ -18,17 +18,17 @@ def generate_pdf(html, directory, filename):
         'margin-left': '1cm',
         'quiet': '',
         'disable-smart-shrinking': '',
-        'footer-left': '[page] of [topage]'
+        'footer-left': '[page]/[topage]',
     }
     if platform.system() == 'Windows':
         configuration = pdfkit.configuration(
             wkhtmltopdf=os.path.join(
-                os.path.dirname(__file__),
+                os.path.dirname(os.path.abspath(__file__)),
                 'wkhtmltox', 'bin', 'wkhtmltopdf.exe'))
     elif platform.system() == 'Linux':
         configuration = pdfkit.configuration(
             wkhtmltopdf=os.path.join(
-                os.path.dirname(__file__),
+                os.path.dirname(os.path.abspath(__file__)),
                 'wkhtmltopdf.sh'))
     else:
         configuration = pdfkit.configuration()
@@ -40,7 +40,6 @@ def generate_pdf(html, directory, filename):
         pdf_file.write(pdfkit.PDFKit(html, "string",
                                      options=pdfkit_settings,
                                      configuration=configuration).to_pdf())
-
 
 
 def generate_html(values):
