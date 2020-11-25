@@ -305,7 +305,7 @@ if __name__ == '__main__':
                 
             PROJECT_IDS = NEW_PROJECT_IDS
         
-        PROJECT_IDS = [prj for prj in PROJECT_IDS if PROJECT_IDS not in EXCLUDE_PROJECT_IDS]
+        PROJECT_IDS = [prj for prj in PROJECT_IDS if prj not in EXCLUDE_PROJECT_IDS]
 
         # iterate over projects
 
