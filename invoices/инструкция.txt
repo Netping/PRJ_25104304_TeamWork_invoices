@@ -20,8 +20,8 @@ Name:
 
 Для запуска под Linux(рассматривается вариант сервера, без запущенного X-сервера) требуется xvfb.
 в файле wkhtmltopdf.sh проверить путь к исполняемому файлу wkhtmltopdf, по умолчанию /usr/bin/wkhtmltopdf
-Для Windows wkhtmltopdf находится в каталоге wkhtmltox.
-Для MacOS используется системная установка без указания путей.
+Для Windows wkhtmltopdf.exe находится в каталоге wkhtmltox/bin, wkhtmltopdf.sh не используется.
+Для MacOS используется системная установка без указания путей, wkhtmltopdf.sh не используется.
 
 Запуск:
 как обычный python скрипт
