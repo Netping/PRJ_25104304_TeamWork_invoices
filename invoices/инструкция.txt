@@ -25,3 +25,6 @@ Name:
 
 Запуск:
 как обычный python скрипт
+
+Пример запуска:
+python ./main.py --domain https://netping.teamwork.com --apikey twp_****************** --project_ids all_projects --exclude_project_ids 442963 --start_date YYYYMMDD --end_date YYYYMMDD --logdir %path_to_logdir% --pdfdir %path_to_pdfdir% --check-lost
