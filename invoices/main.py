@@ -709,7 +709,7 @@ if __name__ == '__main__':
                                         'comment': tm['description'],
                                         'time': float(tm['hoursDecimal']),
                                         'cost': float(tm['hoursDecimal']) * float(rates_for_users_per_project[tm['person-id']][tm['project-id']]),
-                                    }
+                                    })
                                 except Exception as e:
                                     log_error('Ошибка обработки временной отметки (project {}, person {}): {}'.format(PROJECT, name, e))
                                     log_error('Ошибка обработки временной отметки time entrie : {}'.format(tm))
