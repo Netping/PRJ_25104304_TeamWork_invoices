@@ -689,14 +689,29 @@ if __name__ == '__main__':
                     if PDF_DIR:
                         try:
                             time_ids = items[person].strip(',')
-                            invoices =[{
-                                'date': datetime.datetime.strptime(tm['date'], r'%Y-%m-%dT%H:%M:%SZ'),
-                                'name': name,
-                                'task': tm['todo-item-name'],
-                                'comment': tm['description'],
-                                'time': float(tm['hoursDecimal']),
-                                'cost': float(tm['hoursDecimal']) * float(rates_for_users_per_project[tm['person-id']][tm['project-id']]),
-                            } for tm in time['time-entries'] if tm['id'] in time_ids]
+                            invoices = list()
+                            for tm in time['time-entries']:
+                                try:
+                                    if tm['id'] not in time_ids:
+                                        continue
+                                    try:
+                                        date = datetime.datetime.strptime(tm['date'], r'%Y-%m-%dT%H:%M:%SZ')
+                                    except Exception as e:
+                                        date = None
+                                        log_error('Ошибка извлечения даты из временной отметки (project {}, person {}): {}'.format(PROJECT, name, e))
+                                        log_error('Ошибка извлечения даты из временной отметки, дата: {}'.format(tm['date']))
+
+                                    invoices.append({
+                                        'date': date,
+                                        'name': name,
+                                        'task': tm['todo-item-name'],
+                                        'comment': tm['description'],
+                                        'time': float(tm['hoursDecimal']),
+                                        'cost': float(tm['hoursDecimal']) * float(rates_for_users_per_project[tm['person-id']][tm['project-id']]),
+                                    }
+                                except Exception as e:
+                                    log_error('Ошибка обработки временной отметки (project {}, person {}): {}'.format(PROJECT, name, e))
+                                    log_error('Ошибка обработки временной отметки time entrie : {}'.format(tm))
                             summ = round(sum(map(lambda x: x['cost'], invoices)), 2)
                             generate_pdf(
                                 generate_html({

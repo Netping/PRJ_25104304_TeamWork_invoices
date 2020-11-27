@@ -164,7 +164,7 @@
         <tbody>
             {% for invoice in invoices %}
             <tr>
-                <td>{{ invoice.date.strftime(dateformat) }}</td>
+                <td>{% if invoice.date %}{{ invoice.date.strftime(dateformat) }}{% else %}-{% endif %}</td>
                 <td>{{ invoice.name }}</td>
                 <td>
                     {{ invoice.task }}<br />

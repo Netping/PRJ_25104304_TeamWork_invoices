@@ -47,7 +47,7 @@ def generate_html(values):
     template = jinja2.Environment(
         loader=jinja2.FileSystemLoader(path)).get_template(
         'invoice.html')
-    values['dateformat'] = "%d/%m/%Y" if platform.system() == 'Windows' else "%02d/%02m/%Y"
+    values['dateformat'] = "%02d/%02m/%Y" if platform.system() == 'Linux' else "%d/%m/%Y"
     return template.render(values)
 
 
@@ -68,6 +68,18 @@ if __name__ == '__main__':
                 'time': 0.852,
                 'cost': 8.52,
             },
-        ] * 12
+        ] * 12 + [
+            {
+                'date': None,
+                'name': 'Name Surname',
+                'task': ('Тест'),
+                'comment': ('1. пункт 1.<br/>'
+                            '2. пункт 2.<br/>'
+                            '3. пункт 3<br/>'
+                            '4. пункт 4.'),
+                'time': 0.852,
+                'cost': 8.52,
+            },
+        ]
     }
     generate_pdf(generate_html(values), 'pdf_out', 'output.pdf')
