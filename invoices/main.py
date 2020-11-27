@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
         # version constant for logging
 
-        SCRIPT_VERSION = "4.2"
+        SCRIPT_VERSION = "4.3"
 
         # constant for http header requests
 
@@ -700,6 +700,7 @@ if __name__ == '__main__':
                                         date = None
                                         log_error('Ошибка извлечения даты из временной отметки (project {}, person {}): {}'.format(PROJECT, name, e))
                                         log_error('Ошибка извлечения даты из временной отметки, дата: {}'.format(tm['date']))
+                                        log_error('Ошибка извлечения даты из временной отметки, отметка: {}'.format(tm))
 
                                     invoices.append({
                                         'date': date,
